@@ -51,6 +51,7 @@ public:
 
 		// Since we are not starting a new operation the io_service will run out of
 		// work to do and the client will exit.
+		connection_.async_read(struct_data, boost::bind(&platform_serialization_data_client::handle_read, this, boost::asio::placeholders::error));
 	}
 
 private:
