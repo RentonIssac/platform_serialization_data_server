@@ -83,10 +83,9 @@ public:
 	}
 
 	void print_all() {
-		auto iter = data.begin();
-		for (; iter != data.end(); iter++) {
-			std::cout << "first:\t" << iter->first << "\tsecond:\t" << iter->second << std::endl;
-		}
+		for (auto iter = data.begin(); iter != data.end(); iter++)
+			std::cout << "first:\t" << iter->first << "\tsecond:\t" << iter->second.the_number << "\t" << iter->second.the_float << "\t"
+			<< iter->second.the_string << "\t" << iter->second.the_double << "\t" << iter->second.the_char << std::endl;
 	}
 protected:
 	std::map<DATA_KEY_TYPE, DATA_VALUE_TYPE> data;

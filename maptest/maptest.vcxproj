@@ -151,6 +151,7 @@
     <ClInclude Include="platform_serialization_data.h" />
     <ClInclude Include="platform_serialization_data_client.h" />
     <ClInclude Include="platform_serialization_data_connection.h" />
+    <ClInclude Include="platform_serialization_data_connection_mgr.h" />
     <ClInclude Include="platform_serialization_data_server.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />

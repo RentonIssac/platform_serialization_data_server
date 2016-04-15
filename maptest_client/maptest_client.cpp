@@ -8,7 +8,7 @@
 int main() {
 	try	{
 		boost::asio::io_service io_service;
-		platform_serialization_data_client client(io_service, "127.0.0.1", "9999");
+		platform_serialization_data_client<platform_serialization_data<int, test_struct>> client(io_service, "127.0.0.1", "9999");
 		io_service.run();
 	} catch (std::exception& e){
 		std::cerr << e.what() << std::endl;

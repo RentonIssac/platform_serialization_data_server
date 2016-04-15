@@ -36,6 +36,9 @@
     <ClInclude Include="platform_serialization_data_client.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="platform_serialization_data_connection_mgr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -8,6 +8,7 @@
 #include <boost/serialization/vector.hpp>
 #include "platform_serialization_data.h"
 
+template<class T_DATA>
 class platform_serialization_data_client {
 public:
 	/// Constructor starts the asynchronous connect operation.
@@ -27,7 +28,7 @@ public:
 			// Successfully established connection. Start operation to read the list
 			// of stocks. The connection::async_read() function will automatically
 			// decode the data that is read from the underlying socket.
-			connection_.async_read(struct_data, boost::bind(&platform_serialization_data_client::handle_read, this, boost::asio::placeholders::error));
+			connection_.async_read(data, boost::bind(&platform_serialization_data_client::handle_read, this, boost::asio::placeholders::error));
 		} else {
 			// An error occurred. Log it and return. Since we are not starting a new
 			// operation the io_service will run out of work to do and the client will
@@ -40,10 +41,10 @@ public:
 	void handle_read(const boost::system::error_code& e) {
 		if (!e) {
 			// Print out the data that was received.
-			//int_data.print_all();
-			for( auto iter = struct_data.begin(); iter!= struct_data.end(); iter++ )
+			data.print_all();
+			/*for( auto iter = data.begin(); iter!= data.end(); iter++ )
 				std::cout << "first:\t" << iter->first << "\tsecond:\t" << iter->second.the_number << "\t" << iter->second.the_float << "\t"
-				<< iter->second.the_string << "\t" << iter->second.the_double << "\t" << iter->second.the_char << std::endl;
+				<< iter->second.the_string << "\t" << iter->second.the_double << "\t" << iter->second.the_char << std::endl;*/
 		} else {
 			// An error occurred.
 			std::cerr << e.message() << std::endl;
@@ -51,15 +52,12 @@ public:
 
 		// Since we are not starting a new operation the io_service will run out of
 		// work to do and the client will exit.
-		connection_.async_read(struct_data, boost::bind(&platform_serialization_data_client::handle_read, this, boost::asio::placeholders::error));
+		connection_.async_read(data, boost::bind(&platform_serialization_data_client::handle_read, this, boost::asio::placeholders::error));
 	}
 
 private:
 	/// The connection to the server.
-	platform_serialization_data_connection connection_;
+	platform_serialization_data_connection<T_DATA> connection_;
 
-	/// The data received from the server.
-	//std::vector<stock> stocks_;
-	//platform_serialization_data<int, int> int_data;
-	platform_serialization_data<int, test_struct> struct_data;
+	T_DATA data;
 };

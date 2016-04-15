@@ -11,6 +11,7 @@
 #include <sstream>
 #include <vector>
 
+template<class T_DATA>
 class platform_serialization_data_connection {
 public:
 	/// Constructor.
@@ -21,6 +22,22 @@ public:
 	/// an incoming connection.
 	boost::asio::ip::tcp::socket& socket() {
 		return socket_;
+	}
+
+	void start() {
+		do_read();
+	}
+
+	void stop() {
+		socket_.close();
+	}
+
+	void do_read() {
+		async_read(data, boost::bind(&platform_serialization_data_connection::handle_read, this, boost::asio::placeholders::error));
+	}
+
+	void do_write() {
+
 	}
 
 	/// Asynchronously write a data structure to the socket.
@@ -111,6 +128,13 @@ public:
 		}
 	}
 
+	void handle_read(const boost::system::error_code& e) {
+		if (!e) {
+		}
+
+		async_read(data, boost::bind(&platform_serialization_data_connection::handle_read, this, boost::asio::placeholders::error));
+	}
+
 private:
 	/// The underlying socket.
 	boost::asio::ip::tcp::socket socket_;
@@ -129,6 +153,10 @@ private:
 
 	/// Holds the inbound data.
 	std::vector<char> inbound_data_;
+
+	T_DATA data;
 };
 
-typedef boost::shared_ptr<platform_serialization_data_connection> platform_serialization_data_connection_ptr;
+//typedef boost::shared_ptr<platform_serialization_data_connection<T_DATA>> platform_serialization_data_connection_ptr<T_DATA>;
+//template<typename T_DATA>
+//using platform_serialization_data_connection_ptr<T_DATA> = boost::shared_ptr<platform_serialization_data_connection<T_DATA>>;
