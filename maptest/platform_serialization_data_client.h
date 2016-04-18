@@ -8,7 +8,7 @@
 #include <boost/serialization/vector.hpp>
 #include "platform_serialization_data.h"
 
-template<class T_DATA>
+template<class T_REQ, class T_RES>
 class platform_serialization_data_client {
 public:
 	/// Constructor starts the asynchronous connect operation.
@@ -57,7 +57,7 @@ public:
 
 private:
 	/// The connection to the server.
-	platform_serialization_data_connection<T_DATA> connection_;
+	platform_serialization_data_connection<T_REQ, T_RES> connection_;
 
-	T_DATA data;
+	T_REQ data;
 };

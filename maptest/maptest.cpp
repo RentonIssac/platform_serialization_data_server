@@ -12,7 +12,7 @@ int main() {
 		unsigned short port = 9999;
 
 		boost::asio::io_service io_service;
-		platform_serialization_data_server<platform_serialization_data<int, test_struct>> server(io_service, port);
+		platform_serialization_data_server<platform_serialization_data<int, req>, platform_serialization_data<int, res>> server(io_service, port);
 		//io_service.run();
 		std::thread t([&io_service]() { io_service.run(); });
 
@@ -20,19 +20,19 @@ int main() {
 		while (1) {
 			seed++;
 
-			platform_serialization_data<int, test_struct> struct_data_tmp;
+			platform_serialization_data<int, req> struct_data_tmp;
 
 			for (int i = 0; i < 100; i++) {
 				int r = seed;
 
-				test_struct ts;
-				ts.the_number = r;
-				ts.the_float = r + 0.5f;
+				req ts;
+				ts.req_number = r;
+				ts.req_float = r + 0.5f;
 				std::ostringstream stm;
 				stm << "string" << r;
-				ts.the_string = stm.str();
-				ts.the_double = r + 0.6;
-				_snprintf_s(ts.the_char, 32, "%s%d", "char", r);
+				ts.req_string = stm.str();
+				ts.req_double = r + 0.6;
+				_snprintf_s(ts.req_char, 32, "%s%d", "char", r);
 				struct_data_tmp.put(r, ts);
 			}
 

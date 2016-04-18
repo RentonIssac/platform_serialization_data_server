@@ -18,44 +18,56 @@ void serialize(Archive& ar, const unsigned int version) { \
 
 #define MAKE_SERIALIZABLE_END() }
 
-typedef struct __test_struct {
-	int the_number;
-	float the_float;
-	std::string the_string;
-	double the_double;
-	char the_char[32];
+class serialize_object {
+public:
+	virtual void print() = 0;
+};
+
+class req : public serialize_object {
+public:
+	int req_number;
+	float req_float;
+	std::string req_string;
+	double req_double;
+	char req_char[32];
+
+public:
+	virtual void print() {
+		std::cout << req_number << "\t" << req_float << "\t" << req_string << "\t" << req_double << "\t" << req_char << std::endl;
+	}
+protected:
+	MAKE_SERIALIZABLE_BEGIN()
+		MAKE_SERIALIZABLE(req_number)
+		MAKE_SERIALIZABLE(req_float)
+		MAKE_SERIALIZABLE(req_string)
+		MAKE_SERIALIZABLE(req_double)
+		MAKE_SERIALIZABLE(req_char)
+	MAKE_SERIALIZABLE_END()
+};
+
+class res {
+public:
+	int res_number;
+	std::string res_string;
+	char res_char[32];
+
+public:
+	virtual void print() {
+		std::cout << res_number << "\t" << res_string << "\t" << res_char << std::endl;
+	}
 
 protected:
-	/*friend class boost::serialization::access;
-	template <typename Archive>
-	void serialize(Archive& ar, const unsigned int version) {
-		ar & the_number;
-		ar & the_float;
-		ar & the_string;
-		ar & the_double;
-		ar & the_char;
-	}*/
 	MAKE_SERIALIZABLE_BEGIN()
-		MAKE_SERIALIZABLE(the_number)
-		MAKE_SERIALIZABLE(the_float)
-		MAKE_SERIALIZABLE(the_string)
-		MAKE_SERIALIZABLE(the_double)
-		MAKE_SERIALIZABLE(the_char)
+		MAKE_SERIALIZABLE(res_number)
+		MAKE_SERIALIZABLE(res_string)
+		MAKE_SERIALIZABLE(res_char)
 	MAKE_SERIALIZABLE_END()
-} test_struct;
-
-typedef struct __test_struct1 {
-	int the_number;
-	std::string the_string;
-	double the_double;
-	char the_char[32];
-} test_struct1;
+};
 
 template<class DATA_KEY_TYPE, class DATA_VALUE_TYPE>
 class platform_serialization_data {
 public:
 	void put(DATA_KEY_TYPE _name, DATA_VALUE_TYPE _value) {
-		//data.insert(_name, _value);
 		data[_name] = _value;
 	}
 
@@ -83,17 +95,15 @@ public:
 	}
 
 	void print_all() {
-		for (auto iter = data.begin(); iter != data.end(); iter++)
-			std::cout << "first:\t" << iter->first << "\tsecond:\t" << iter->second.the_number << "\t" << iter->second.the_float << "\t"
-			<< iter->second.the_string << "\t" << iter->second.the_double << "\t" << iter->second.the_char << std::endl;
+		for (auto iter = data.begin(); iter != data.end(); iter++) {
+			std::cout << "first:\t" << iter->first << "\tsecond:\t";
+			iter->second.print();
+		}
 	}
 protected:
 	std::map<DATA_KEY_TYPE, DATA_VALUE_TYPE> data;
 
-private:
-	friend class boost::serialization::access;
-	template <typename Archive>
-	void serialize(Archive& ar, const unsigned int version) {
-		ar & data;
-	}
+	MAKE_SERIALIZABLE_BEGIN()
+		MAKE_SERIALIZABLE(data)
+	MAKE_SERIALIZABLE_END()
 };

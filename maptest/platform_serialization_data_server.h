@@ -14,30 +14,28 @@
 #include "platform_serialization_data_connection.h" // Must come before boost/serialization headers.
 #include "platform_serialization_data.h"
 
-template<class T_DATA>
+template<class T_REQ, class T_RES>
 class platform_serialization_data_server {
-/*public:
-	typedef std::deque<T_DATA> data_queue;*/
 public:
 	platform_serialization_data_server(boost::asio::io_service& _io_service, unsigned short port) : io_service(_io_service), acceptor_(io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)) {
 		// Start an accept operation for a new connection.
-		boost::shared_ptr<platform_serialization_data_connection<T_DATA>> new_conn(new platform_serialization_data_connection<T_DATA>(acceptor_.get_io_service()));
+		boost::shared_ptr<platform_serialization_data_connection<T_REQ, T_RES>> new_conn(new platform_serialization_data_connection<T_REQ, T_RES>(acceptor_.get_io_service()));
 		acceptor_.async_accept(new_conn->socket(), boost::bind(&platform_serialization_data_server::handle_accept, this, boost::asio::placeholders::error, new_conn));
 	}
 
 	/// Handle completion of a accept operation.
-	void handle_accept(const boost::system::error_code& e, boost::shared_ptr<platform_serialization_data_connection<T_DATA>> _conn) {
+	void handle_accept(const boost::system::error_code& e, boost::shared_ptr<platform_serialization_data_connection<T_REQ,T_RES>> _conn) {
 		if (!e) {
 			mutex_conns.lock();
 			conns.insert(_conn);
 			mutex_conns.unlock();
 		}
 
-		boost::shared_ptr<platform_serialization_data_connection<T_DATA>> new_conn(new platform_serialization_data_connection<T_DATA>(acceptor_.get_io_service()));
+		boost::shared_ptr<platform_serialization_data_connection<T_REQ, T_RES>> new_conn(new platform_serialization_data_connection<T_REQ, T_RES>(acceptor_.get_io_service()));
 		acceptor_.async_accept(new_conn->socket(), boost::bind(&platform_serialization_data_server::handle_accept, this, boost::asio::placeholders::error, new_conn));
 	}
 
-	void send_data(T_DATA& data) {
+	void send_data(T_REQ& data) {
 		io_service.post(
 			[this, data]()
 		{
@@ -47,7 +45,7 @@ public:
 		});
 	}
 
-	void do_write(const T_DATA& data) {
+	void do_write(const T_REQ& data) {
 		mutex_conns.lock();
 		if (conns.size() <= 0) {
 			std::cout << "No conn to recv, drop." << std::endl;
@@ -57,15 +55,16 @@ public:
 
 		mutex_conns.lock();
 		for (auto iter = conns.begin(); iter != conns.end(); iter++) {
-			(*iter)->async_write(data, boost::bind(&platform_serialization_data_server::handle_write, this, boost::asio::placeholders::error, (*iter)));
+			//(*iter)->async_write(data, boost::bind(&platform_serialization_data_server::handle_write, this, boost::asio::placeholders::error, (*iter)));
+			(*iter)->do_write(data);
 		}
 		mutex_conns.unlock();
 	}
 
-	void handle_write(const boost::system::error_code& e, boost::shared_ptr<platform_serialization_data_connection<T_DATA>> conn) {
+	/*void handle_write(const boost::system::error_code& e, boost::shared_ptr<platform_serialization_data_connection<T_REQ, T_RES>> conn) {
 		if (!e) {
 		}
-	}
+	}*/
 
 private:
 	boost::asio::io_service& io_service;
@@ -74,5 +73,5 @@ private:
 	//data_queue dq;
 	std::mutex mutex_conns;
 
-	std::set<boost::shared_ptr<platform_serialization_data_connection<T_DATA>>> conns;
+	std::set<boost::shared_ptr<platform_serialization_data_connection<T_REQ, T_RES>>> conns;
 };

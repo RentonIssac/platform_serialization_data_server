@@ -14,13 +14,13 @@ public:
 	}
 
 	/// Add the specified connection to the manager and start it.
-	void start(platform_serialization_data_connection_ptr<T_DATA> c) {
+	void start(boost::shared_ptr<platform_serialization_data_connection<T_DATA>> c) {
 		conns.insert(c);
 		c->start();
 	}
 
 	/// Stop the specified connection.
-	void stop(platform_serialization_data_connection_ptr c) {
+	void stop(boost::shared_ptr<platform_serialization_data_connection<T_DATA>> c) {
 		c->stop();
 	}
 
@@ -37,5 +37,5 @@ public:
 
 private:
 	/// The managed connections.
-	std::set<platform_serialization_data_connection_ptr<T_DATA>> conns;
+	std::set<boost::shared_ptr<platform_serialization_data_connection<T_DATA>>> conns;
 };

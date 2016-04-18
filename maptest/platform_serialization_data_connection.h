@@ -11,15 +11,12 @@
 #include <sstream>
 #include <vector>
 
-template<class T_DATA>
+template<class T_REQ, class T_RES>
 class platform_serialization_data_connection {
 public:
-	/// Constructor.
 	platform_serialization_data_connection(boost::asio::io_service& io_service) : socket_(io_service) {
 	}
 
-	/// Get the underlying socket. Used for making a connection or for accepting
-	/// an incoming connection.
 	boost::asio::ip::tcp::socket& socket() {
 		return socket_;
 	}
@@ -36,11 +33,16 @@ public:
 		async_read(data, boost::bind(&platform_serialization_data_connection::handle_read, this, boost::asio::placeholders::error));
 	}
 
-	void do_write() {
-
+	void do_write(const T_REQ& _req) {
+		async_write(_req, boost::bind(&platform_serialization_data_connection::after_do_write, this, boost::asio::placeholders::error));
 	}
 
-	/// Asynchronously write a data structure to the socket.
+	void after_do_write(const boost::system::error_code& e) {
+		if (!e) {
+			std::cout << "platform_serialization_data_connection after_do_write" << std::endl;
+		}
+	}
+
 	template <typename T, typename Handler>
 	void async_write(const T& t, Handler handler) {
 		// Serialize the data first so we know how large it is.
@@ -83,8 +85,7 @@ public:
 	void handle_read_header(const boost::system::error_code& e, T& t, boost::tuple<Handler> handler) {
 		if (e) {
 			boost::get<0>(handler)(e);
-		}
-		else {
+		} else {
 			// Determine the length of the serialized data.
 			std::istringstream is(std::string(inbound_header_, header_length));
 			std::size_t inbound_data_size = 0;
@@ -107,16 +108,14 @@ public:
 	void handle_read_data(const boost::system::error_code& e, T& t, boost::tuple<Handler> handler) {
 		if (e) {
 			boost::get<0>(handler)(e);
-		}
-		else {
+		} else {
 			// Extract the data structure from the data just received.
 			try {
 				std::string archive_data(&inbound_data_[0], inbound_data_.size());
 				std::istringstream archive_stream(archive_data);
 				boost::archive::text_iarchive archive(archive_stream);
 				archive >> t;
-			}
-			catch (std::exception& e) {
+			} catch (std::exception& e) {
 				// Unable to decode data.
 				boost::system::error_code error(boost::asio::error::invalid_argument);
 				boost::get<0>(handler)(error);
@@ -154,9 +153,6 @@ private:
 	/// Holds the inbound data.
 	std::vector<char> inbound_data_;
 
-	T_DATA data;
+	T_REQ data;
 };
 
-//typedef boost::shared_ptr<platform_serialization_data_connection<T_DATA>> platform_serialization_data_connection_ptr<T_DATA>;
-//template<typename T_DATA>
-//using platform_serialization_data_connection_ptr<T_DATA> = boost::shared_ptr<platform_serialization_data_connection<T_DATA>>;
